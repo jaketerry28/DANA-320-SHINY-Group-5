@@ -3,6 +3,8 @@
 library(shiny)
 library(tidyverse)
 library(scales)
+library(shinyWidgets)
+
 
 ### ---- Define UI ----
 
@@ -27,6 +29,18 @@ ui <- fluidPage(
       "Y-Axis Variable:",
       choices = c("Sale Amount", "Assessed Value"),
       selected = "Sale Amount"
+    ),
+    pickerInput(
+      inputId = "towns",
+      label = "Choose Town(s):",
+      choices = sort(unique(df$Town)),
+      selected = unique(df$Town)[1:5],
+      multiple = TRUE,
+      options = list(
+        `actions-box` = TRUE,
+        `live-search` = TRUE,
+        `selected-text-format` = "count > 3"
+      )
     )
   ),
 
@@ -52,22 +66,24 @@ server <- function(input, output) {
   
   # Plot
   output$plot1 <- renderPlot({
-    data <- filtered()
+    data <- filtered() %>%
+      filter(Town %in% input$towns)
     
-    # aggregate by year
-    yearly <- data %>%
-      group_by(`List Year`) %>%
+    town_year <- data %>%
+      group_by(Town, `List Year`) %>%
       summarize(
-        value = mean(.data[[input$yvar]], na.rm = TRUE)
+        value = mean(.data[[input$yvar]], na.rm = TRUE),
+        .groups = "drop"
       )
     
-    ggplot(yearly, aes(x = `List Year`, y = value)) +
-      geom_line(color = "steelblue", linewidth = 1.2) +
-      geom_point(color = "steelblue", size = 2) +
+    ggplot(town_year, aes(x = `List Year`, y = value, color = Town)) +
+      geom_line(linewidth = 1.1) +
+      geom_point(size = 2) +
       labs(
         x = "List Year",
         y = input$yvar,
-        title = paste("Average", input$yvar, "Over Time")
+        title = paste("Average", input$yvar, "Over Time by Town"),
+        color = "Town"
       ) +
       theme_bw()
   })
