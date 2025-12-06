@@ -41,13 +41,26 @@ ui <- fluidPage(
         `live-search` = TRUE,
         `selected-text-format` = "count > 3"
       )
+    ),
+    pickerInput(
+      inputId = "types",
+      label = "Choose Property Type(s):",
+      choices = sort(unique(df$`Property Type`)),
+      selected = unique(df$`Property Type`),
+      multiple = TRUE,
+      options = list(
+        `actions-box` = TRUE,
+        `live-search` = TRUE,
+        `selected-text-format` = "count > 3"
+      )
     )
   ),
 
   
   # create spot for plot
   mainPanel(
-    plotOutput(outputId = "plot1")
+    plotOutput(outputId = "plot1"),
+    plotOutput(outputId = "propertyPlot")
   )
 )
 
@@ -58,7 +71,7 @@ server <- function(input, output) {
   
   # Filtered by slider
   filtered <- reactive({
-    req(input$yearSlider)  # ensure slider exists
+    req(input$yearSlider)
     
     df[df$`List Year` >= as.numeric(input$yearSlider[1]) &
          df$`List Year` <= as.numeric(input$yearSlider[2]), ]
@@ -87,6 +100,24 @@ server <- function(input, output) {
       ) +
       theme_bw()
   })
+
+
+# Plot for Property Type
+output$propertyPlot <- renderPlot({
+  df_clean <- df %>% 
+    filter(!is.na(`Property Type`)) %>%
+    filter(`Property Type` %in% input$types)
+  
+  ggplot(df_clean, aes(x = `Property Type`, fill = `Property Type`)) +
+    geom_bar() +
+    labs(
+      title = "Number of Sales by Property Type",
+      x = "Property Type",
+      y = "Number of Sales",
+      fill = "Property Type"
+    ) +
+    theme_bw()
+})
 }
   
 
