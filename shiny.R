@@ -48,7 +48,8 @@ ui <- fluidPage(
   
   # create spot for plot
   mainPanel(
-    plotOutput(outputId = "plot1")
+    plotOutput(outputId = "plot1"),
+    plotOutput(outputId = "plot2")
   )
 )
 
@@ -88,6 +89,30 @@ server <- function(input, output) {
         color = "Town"
       ) +
       theme_bw()
+  })
+  
+  output$plot2 <- renderPlot({
+    data <- filtered() %>%
+      filter(!is.na(`Residential Type`))
+    
+    residential_year <- data %>%
+      group_by(`Residential Type`, `List Year`) %>%
+      summarize(
+        value = mean(.data[[input$yvar]], na.rm = TRUE),
+        .groups = "drop"
+      )
+    
+  ggplot(residential_year, aes(x = `List Year`, y = value, color = `Residential Type`)) +
+    geom_line(linewidth = 1.1) +
+    geom_point(size = 2) +
+    scale_y_continuous(labels = scales::comma) +
+    labs(
+      x = "List Year",
+      y = input$yvar,
+      title = paste("Average", input$yvar, "Over Time by Residential Type"),
+      color = "Residential Type"
+    ) +
+    theme_bw()
   })
 }
   
