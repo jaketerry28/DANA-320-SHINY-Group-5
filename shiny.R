@@ -22,7 +22,8 @@ ui <- fluidPage(
       "Years",
       min = min(df$`List Year`, na.rm = TRUE),
       max = max(df$`List Year`, na.rm = TRUE),
-      value = range(df$`List Year`, na.rm = TRUE)
+      value = range(df$`List Year`, na.rm = TRUE),
+      sep = ""
     ),
     selectInput(
       "yvar",
