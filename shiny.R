@@ -80,6 +80,7 @@ server <- function(input, output) {
     ggplot(town_year, aes(x = `List Year`, y = value, color = Town)) +
       geom_line(linewidth = 1.1) +
       geom_point(size = 2) +
+      scale_y_continuous(labels = scales::comma) +
       labs(
         x = "List Year",
         y = input$yvar,
